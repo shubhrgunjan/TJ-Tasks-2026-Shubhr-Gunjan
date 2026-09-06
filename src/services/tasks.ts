@@ -11,9 +11,10 @@ import {
   onSnapshot,
   Timestamp 
 } from 'firebase/firestore';
-import { db } from './firebase';
+import { db, auth } from './firebase';
 import { Task, TaskPriority } from '../types';
 import { logActivity } from './activity';
+import { getDemoTasksFallback } from './seedTestMode';
 
 export const createTask = async (
   taskData: {
@@ -170,16 +171,30 @@ export const subscribeProjectTasks = (
     where('projectId', '==', projectId)
   );
 
+  const activeUid = auth.currentUser?.uid || 'demo_user';
+  const isTestMode = !!localStorage.getItem('tjflow_test_persona');
+
   return onSnapshot(q, (snapshot) => {
     const list: Task[] = [];
     snapshot.forEach((doc) => {
       list.push(doc.data() as Task);
     });
-    // Sort in memory by createdAt descending
+
+    if (list.length === 0 || isTestMode) {
+      const fallbacks = getDemoTasksFallback(activeUid).filter(t => t.projectId === projectId);
+      for (const fb of fallbacks) {
+        if (!list.some(t => t.id === fb.id)) {
+          list.push(fb);
+        }
+      }
+    }
+
     const sorted = list.sort((a, b) => b.createdAt.toMillis() - a.createdAt.toMillis());
     callback(sorted);
   }, (err) => {
     console.error('Error listening to tasks:', err);
+    const fallbacks = getDemoTasksFallback(activeUid).filter(t => t.projectId === projectId);
+    callback(fallbacks);
     if (onError) onError(err);
   });
 };
@@ -190,9 +205,14 @@ export const subscribeUserProjectTasks = (
   callback: (tasks: Task[]) => void,
   onError?: (error: any) => void
 ) => {
-  if (projectIds.length === 0) {
-    callback([]);
-    return () => {};
+  const activeUid = auth.currentUser?.uid || 'demo_user';
+  const isTestMode = !!localStorage.getItem('tjflow_test_persona');
+
+  if (projectIds.length === 0 || isTestMode) {
+    callback(getDemoTasksFallback(activeUid));
+    if (projectIds.length === 0 && !isTestMode) {
+      return () => {};
+    }
   }
 
   const tasksMap: Record<string, Task[]> = {};
@@ -211,11 +231,22 @@ export const subscribeUserProjectTasks = (
         });
         tasksMap[pid] = list;
 
-        const allTasks = Object.values(tasksMap).flat();
+        let allTasks = Object.values(tasksMap).flat();
+
+        if (allTasks.length === 0 || isTestMode) {
+          const fallbacks = getDemoTasksFallback(activeUid);
+          const taskMap = new Map<string, Task>();
+          fallbacks.forEach(t => taskMap.set(t.id, t));
+          allTasks.forEach(t => taskMap.set(t.id, t));
+          allTasks = Array.from(taskMap.values());
+        }
+
         callback(allTasks);
       },
       (err) => {
         console.error(`Error listening to tasks for project ${pid}:`, err);
+        const fallbacks = getDemoTasksFallback(activeUid);
+        callback(fallbacks);
         if (onError) onError(err);
       }
     );

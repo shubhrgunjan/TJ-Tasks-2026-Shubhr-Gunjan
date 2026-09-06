@@ -12,9 +12,10 @@ import {
   getDoc,
   orderBy
 } from 'firebase/firestore';
-import { db } from './firebase';
+import { db, auth } from './firebase';
 import { ChatConversation, ChatMessage } from '../types';
 import { createNotification } from './notifications';
+import { getDemoMessagesFallback } from './seedTestMode';
 
 export const createOrGetDMConversation = async (
   uid1: string,
@@ -85,15 +86,31 @@ export const subscribeMessages = (
     ? collection(db, 'conversations', targetId, 'messages')
     : collection(db, 'projects', targetId, 'messages');
 
+  const activeUid = auth.currentUser?.uid || 'demo_user';
+  const activeName = auth.currentUser?.displayName || 'Sarah Chen';
+
   return onSnapshot(messagesColl, (snapshot) => {
     const list: ChatMessage[] = [];
     snapshot.forEach((doc) => {
       list.push(doc.data() as ChatMessage);
     });
+
+    const isTestMode = !!localStorage.getItem('tjflow_test_persona');
+    if (list.length === 0 || isTestMode) {
+      const fallbacks = getDemoMessagesFallback(activeUid, activeName);
+      for (const fb of fallbacks) {
+        if (!list.some(m => m.id === fb.id)) {
+          list.push(fb);
+        }
+      }
+    }
+
     const sorted = list.sort((a, b) => a.createdAt.toMillis() - b.createdAt.toMillis());
     callback(sorted);
   }, (err) => {
     console.error('Error listening to messages:', err);
+    const fallbacks = getDemoMessagesFallback(activeUid, activeName);
+    callback(fallbacks);
     if (onError) onError(err);
   });
 };

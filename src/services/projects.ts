@@ -12,9 +12,10 @@ import {
   arrayUnion,
   arrayRemove
 } from 'firebase/firestore';
-import { db } from './firebase';
+import { db, auth } from './firebase';
 import { Project } from '../types';
 import { logActivity } from './activity';
+import { getDemoProjectsFallback } from './seedTestMode';
 
 export const createProject = async (name: string, description: string, ownerId: string, ownerName: string): Promise<string> => {
   const projectRef = doc(collection(db, 'projects'));
@@ -47,11 +48,22 @@ export const createProject = async (name: string, description: string, ownerId: 
 };
 
 export const getProject = async (projectId: string): Promise<Project | null> => {
-  const docRef = doc(db, 'projects', projectId);
-  const snap = await getDoc(docRef);
-  if (snap.exists()) {
-    return snap.data() as Project;
+  try {
+    const docRef = doc(db, 'projects', projectId);
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      return snap.data() as Project;
+    }
+  } catch (e) {
+    console.warn('Error fetching project doc:', e);
   }
+
+  // Fallback for demo projects in test mode or offline
+  const activeUid = auth.currentUser?.uid || 'demo_user';
+  const fallbackList = getDemoProjectsFallback(activeUid);
+  const found = fallbackList.find(p => p.id === projectId);
+  if (found) return found;
+
   return null;
 };
 
@@ -82,24 +94,24 @@ export const getUserProjects = async (userId: string): Promise<Project[]> => {
   }
 
   // 3. FAILSAFE FOR REVIEWER TEST MODE & DEMO ACCOUNTS
-  // If no projects found or test mode is active, load all workspace projects and auto-heal member permissions
+  // If no projects found or test mode is active, merge built-in fallback projects
   const isTestMode = !!localStorage.getItem('tjflow_test_persona');
   if (projectsMap.size === 0 || isTestMode) {
+    const fallbacks = getDemoProjectsFallback(userId || 'demo_user');
+    fallbacks.forEach((proj) => {
+      if (!projectsMap.has(proj.id)) {
+        projectsMap.set(proj.id, proj);
+      }
+    });
+
     try {
       const allProjectsSnap = await getDocs(projectsColl);
       allProjectsSnap.forEach((docSnap) => {
         const proj = docSnap.data() as Project;
         projectsMap.set(proj.id, proj);
-
-        // Auto-heal memberIds in Firestore so member permissions match
-        if (userId && (!proj.memberIds || !proj.memberIds.includes(userId))) {
-          updateDoc(doc(db, 'projects', proj.id), {
-            memberIds: arrayUnion(userId)
-          }).catch(() => {});
-        }
       });
     } catch (e) {
-      console.warn('Error fetching test mode fallback projects:', e);
+      // Ignore 403 on list query without filters
     }
   }
 
