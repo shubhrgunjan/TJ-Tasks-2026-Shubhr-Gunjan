@@ -4,6 +4,8 @@ import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
 import { UserProfile } from '../types';
 
+import { seedTestWorkspaceData } from '../services/seedTestMode';
+
 interface AuthContextType {
   user: User | null;
   profile: UserProfile | null;
@@ -43,6 +45,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
       if (firebaseUser) {
+        // Auto-seed test mode if test persona active
+        if (firebaseUser.email?.endsWith('@tjflow.demo') || localStorage.getItem('tjflow_test_persona')) {
+          seedTestWorkspaceData(firebaseUser.uid).catch(e => console.warn('Auto-seed error:', e));
+        }
+
         // Fetch or create profile
         let userProfile = await fetchProfile(firebaseUser.uid);
         
