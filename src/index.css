@@ -1,0 +1,163 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700;900&display=swap');
+@import "tailwindcss";
+
+:root {
+  --color-canvas-bg: #F4F5F7;
+  --color-canvas-fg: #111827;
+  --color-card-bg: #FFFFFF;
+  --color-surface-hover: #E5E7EB;
+  --color-primary-red: #DC2626;
+  --color-primary-blue: #2563EB;
+  --color-primary-yellow: #D97706;
+  --color-border: #111827;
+  --color-muted-gray: #6B7280;
+  --color-text-secondary: #4B5563;
+  --color-text-muted: #6B7280;
+  --shadow-color: rgba(17, 24, 39, 0.85);
+}
+
+html.dark {
+  --color-canvas-bg: #121214;
+  --color-canvas-fg: #F9FAFB;
+  --color-card-bg: #1A1A1E;
+  --color-surface-hover: #2A2A32;
+  --color-primary-red: #EF4444;
+  --color-primary-blue: #3B82F6;
+  --color-primary-yellow: #F59E0B;
+  --color-border: #3F3F46;
+  --color-muted-gray: #A1A1AA;
+  --color-text-secondary: #A1A1AA;
+  --color-text-muted: #71717A;
+  --shadow-color: rgba(0, 0, 0, 0.7);
+}
+
+@theme {
+  --color-canvas-bg: var(--color-canvas-bg);
+  --color-canvas-fg: var(--color-canvas-fg);
+  --color-card-bg: var(--color-card-bg);
+  --color-surface-hover: var(--color-surface-hover);
+  --color-primary-red: var(--color-primary-red);
+  --color-primary-blue: var(--color-primary-blue);
+  --color-primary-yellow: var(--color-primary-yellow);
+  --color-border: var(--color-border);
+  --color-muted-gray: var(--color-muted-gray);
+  --color-text-secondary: var(--color-text-secondary);
+  --color-text-muted: var(--color-text-muted);
+  
+  --shadow-sm: 3px 3px 0px var(--shadow-color);
+  --shadow-md: 5px 5px 0px var(--shadow-color);
+  --shadow-lg: 7px 7px 0px var(--shadow-color);
+  
+  --font-sans: 'Outfit', sans-serif;
+  --font-display: 'Outfit', sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-canvas-bg);
+    color: var(--color-canvas-fg);
+    font-family: 'Outfit', sans-serif;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+    transition: background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1), color 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  #root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: none;
+    text-align: left;
+  }
+
+  /* Custom inputs and selections */
+  input, select, textarea {
+    background-color: var(--color-card-bg);
+    border: 2px solid var(--color-border);
+    border-radius: 0px !important;
+    padding: 0.6rem 0.85rem;
+    font-family: 'Outfit', sans-serif;
+    color: var(--color-canvas-fg);
+    font-size: 0.875rem;
+    font-weight: 500;
+    outline: none;
+    box-shadow: 3px 3px 0px var(--shadow-color);
+    transition: transform 0.1s ease-out, box-shadow 0.1s ease-out, background-color 0.2s ease, border-color 0.2s ease;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0px var(--shadow-color);
+  }
+
+  /* Custom scrollbar matching design language */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-canvas-bg);
+    border-left: 2px solid var(--color-border);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--color-border);
+    border: 2px solid var(--color-canvas-bg);
+  }
+}
+
+/* Custom Animations for Geometric Shapes */
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(4deg); }
+}
+
+@keyframes float-reverse {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(10px) rotate(-6deg); }
+}
+
+@keyframes spin-slow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes shape-bounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-4px) scale(1.1); }
+}
+
+@keyframes shape-pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.15); opacity: 0.85; }
+}
+
+.animate-float-slow {
+  animation: float-slow 5s ease-in-out infinite;
+}
+
+.animate-float-reverse {
+  animation: float-reverse 6s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 20s linear infinite;
+}
+
+.animate-shape-bounce {
+  animation: shape-bounce 2.5s ease-in-out infinite;
+}
+
+.animate-shape-pulse {
+  animation: shape-pulse 3s ease-in-out infinite;
+}
+

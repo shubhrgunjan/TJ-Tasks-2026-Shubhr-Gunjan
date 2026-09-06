@@ -1,0 +1,91 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function getProject(projectId) {
+      return get(/databases/$(database)/documents/projects/$(projectId)).data;
+    }
+    
+    function isProjectMember(projectId) {
+      return isAuthenticated() && 
+        (request.auth.uid in getProject(projectId).memberIds || 
+         getProject(projectId).ownerId == request.auth.uid);
+    }
+    
+    function getTask(taskId) {
+      return get(/databases/$(database)/documents/tasks/$(taskId)).data;
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId);
+    }
+    
+    match /projects/{projectId} {
+      allow read: if isAuthenticated() && (resource.data.ownerId == request.auth.uid || request.auth.uid in resource.data.memberIds);
+      allow create: if isAuthenticated() && request.resource.data.ownerId == request.auth.uid;
+      allow update: if isAuthenticated() && 
+        (resource.data.ownerId == request.auth.uid || 
+         (request.auth.uid in resource.data.memberIds && request.resource.data.ownerId == resource.data.ownerId));
+      allow delete: if isAuthenticated() && resource.data.ownerId == request.auth.uid;
+      
+      // Project group chat messages
+      match /messages/{messageId} {
+        allow read, write: if isAuthenticated() && isProjectMember(projectId);
+      }
+    }
+    
+    match /tasks/{taskId} {
+      allow read: if isAuthenticated() && isProjectMember(resource.data.projectId);
+      allow create: if isAuthenticated() && isProjectMember(request.resource.data.projectId);
+      allow update: if isAuthenticated() && isProjectMember(resource.data.projectId) && isProjectMember(request.resource.data.projectId);
+      allow delete: if isAuthenticated() && isProjectMember(resource.data.projectId);
+      
+      // Task comments subcollection
+      match /comments/{commentId} {
+        allow read: if isAuthenticated() && isProjectMember(getTask(taskId).projectId);
+        allow create: if isAuthenticated() && isProjectMember(getTask(taskId).projectId) && request.resource.data.authorId == request.auth.uid;
+        allow update, delete: if isAuthenticated() && resource.data.authorId == request.auth.uid;
+      }
+    }
+    
+    match /activity/{activityId} {
+      allow read: if isAuthenticated() && isProjectMember(resource.data.projectId);
+      allow create: if isAuthenticated() && isProjectMember(request.resource.data.projectId) && request.resource.data.actorId == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    match /invitations/{invitationId} {
+      allow read: if isAuthenticated() && (request.auth.token.email.lower() == resource.data.inviteeEmail.lower() || request.auth.uid == resource.data.inviterId);
+      allow create: if isAuthenticated() && request.resource.data.inviterId == request.auth.uid;
+      allow update: if isAuthenticated() && (request.auth.token.email.lower() == resource.data.inviteeEmail.lower() || request.auth.uid == resource.data.inviterId);
+      allow delete: if isAuthenticated() && resource.data.inviterId == request.auth.uid;
+    }
+
+    match /conversations/{conversationId} {
+      allow read: if isAuthenticated() && (request.auth.uid in resource.data.participantIds);
+      allow create: if isAuthenticated() && (request.auth.uid in request.resource.data.participantIds);
+      allow update: if isAuthenticated() && (request.auth.uid in resource.data.participantIds);
+      allow delete: if false;
+
+      match /messages/{messageId} {
+        allow read: if isAuthenticated() && (request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participantIds);
+        allow create: if isAuthenticated() && (request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participantIds) && request.resource.data.senderId == request.auth.uid;
+        allow update, delete: if isAuthenticated() && resource.data.senderId == request.auth.uid;
+      }
+    }
+
+    match /notifications/{notificationId} {
+      allow read, update, delete: if isAuthenticated() && resource.data.recipientId == request.auth.uid;
+      allow create: if isAuthenticated();
+    }
+  }
+}
