@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { PaymentGatewayModal } from '../ui/PaymentGatewayModal';
+import { TestModeBar } from '../ui/TestModeBar';
 
 export const AppLayout: React.FC = () => {
   const { profile } = useAuth();
@@ -428,8 +429,10 @@ export const AppLayout: React.FC = () => {
   );
 
   return (
-    <div className="flex h-screen overflow-hidden bg-canvas-bg text-canvas-fg">
-      {/* Desktop Sidebar */}
+    <div className="flex flex-col h-screen overflow-hidden bg-canvas-bg text-canvas-fg">
+      <TestModeBar />
+      <div className="flex flex-1 h-full overflow-hidden">
+        {/* Desktop Sidebar */}
       <aside className="hidden lg:block w-64 h-full flex-shrink-0">
         {sidebarContent()}
       </aside>
@@ -484,6 +487,7 @@ export const AppLayout: React.FC = () => {
         <main className="flex-1 overflow-y-auto p-4 lg:p-8 bg-canvas-bg">
           <Outlet />
         </main>
+      </div>
       </div>
 
       {/* Global Pro Upgrade Payment Gateway Modal */}

@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
-import { Check, HelpCircle, Hash, MessageSquare, Shield, Activity, Sun, Moon, Sparkles } from 'lucide-react';
+import { Check, HelpCircle, Hash, MessageSquare, Shield, Activity, Sun, Moon, Sparkles, Zap } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { PaymentGatewayModal } from '../components/ui/PaymentGatewayModal';
+import { TestModeModal } from '../components/ui/TestModeModal';
 
 export const LandingPage: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [testModalOpen, setTestModalOpen] = useState(false);
 
   return (
     <div className="bg-canvas-bg min-h-screen flex flex-col font-sans border-t-8 border-primary-red transition-colors duration-200">
@@ -31,7 +33,15 @@ export const LandingPage: React.FC = () => {
           <a href="#faq" className="hover:text-primary-blue transition-colors">FAQ</a>
         </div>
 
-        <div className="flex gap-3 items-center">
+        <div className="flex gap-2.5 items-center">
+          <button
+            onClick={() => setTestModalOpen(true)}
+            className="px-3 py-1.5 bg-primary-yellow text-canvas-fg font-black text-xs uppercase tracking-wider border-2 border-border shadow-xs hover:-translate-y-0.5 transition-all flex items-center gap-1.5 cursor-pointer"
+          >
+            <Zap className="w-3.5 h-3.5 text-primary-red animate-pulse" />
+            <span>Test Mode</span>
+          </button>
+          
           <button
             onClick={toggleTheme}
             className="p-2 border-2 border-border bg-card-bg text-canvas-fg hover:bg-canvas-bg transition-all active:translate-x-[1px] active:translate-y-[1px] shadow-sm flex items-center justify-center cursor-pointer"
@@ -44,6 +54,7 @@ export const LandingPage: React.FC = () => {
               <Moon className="w-4 h-4 text-canvas-fg" />
             )}
           </button>
+          
           <Link to="/login">
             <Button variant="outline" size="sm">Sign In</Button>
           </Link>
@@ -59,33 +70,43 @@ export const LandingPage: React.FC = () => {
         
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
           <div className="lg:col-span-7 flex flex-col items-start text-left">
-            <span className="px-3 py-1 border-2 border-border text-xs font-black uppercase bg-primary-yellow tracking-widest text-canvas-fg shadow-sm mb-6 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-primary-red animate-ping inline-block" />
-              REAL-TIME TEAM WORKSPACE
-            </span>
+            <div className="flex flex-wrap gap-2 mb-6">
+              <span className="px-3 py-1 border-2 border-border text-xs font-black uppercase bg-primary-yellow tracking-widest text-canvas-fg shadow-sm flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-primary-red animate-ping inline-block" />
+                REAL-TIME TEAM WORKSPACE
+              </span>
+              <button 
+                onClick={() => setTestModalOpen(true)}
+                className="px-3 py-1 border-2 border-border text-xs font-black uppercase bg-primary-red text-white tracking-widest shadow-sm flex items-center gap-1.5 hover:opacity-90 cursor-pointer"
+              >
+                <Zap className="w-3.5 h-3.5 animate-pulse" />
+                REVIEWER TEST MODE
+              </button>
+            </div>
+
             <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tight leading-none text-canvas-fg mb-4">
               ORCHESTRATE WORK.<br />
               <span className="text-primary-blue">DELIVER TOGETHER.</span>
             </h1>
-            <p className="text-base md:text-lg font-medium text-gray-600 max-w-xl mb-8 leading-relaxed">
+            <p className="text-base md:text-lg font-medium text-text-secondary dark:text-gray-300 max-w-xl mb-8 leading-relaxed">
               TJFlow gives modern product teams a unified visual workspace for project boards, task tracking, team chat, and activity monitoring—fully synchronized in real time.
             </p>
             <div className="flex flex-wrap gap-4">
-              <Link to="/register">
-                <Button variant="primary" size="lg">Get Started Free</Button>
-              </Link>
-              <button onClick={() => setPaymentModalOpen(true)}>
-                <Button variant="outline" size="lg" className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-primary-yellow" />
-                  <span>Upgrade to Pro</span>
+              <button onClick={() => setTestModalOpen(true)}>
+                <Button variant="primary" size="lg" className="flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-primary-yellow" />
+                  <span>Launch Reviewer Test Mode</span>
                 </Button>
               </button>
+              <Link to="/register">
+                <Button variant="outline" size="lg">Get Started Free</Button>
+              </Link>
             </div>
           </div>
           
           {/* Animated Hero Art Composition */}
           <div className="lg:col-span-5 flex justify-center items-center">
-            <div className="relative w-80 h-80 md:w-96 md:h-96 border-4 border-border bg-[#EFEFEF] shadow-lg flex items-center justify-center p-8 overflow-hidden">
+            <div className="relative w-80 h-80 md:w-96 md:h-96 border-4 border-border bg-canvas-bg shadow-lg flex items-center justify-center p-8 overflow-hidden">
               <div className="absolute inset-0 bg-[linear-gradient(to_right,#C0C0C0_1px,transparent_1px)] bg-[size:2rem] opacity-30" />
               
               {/* Floating Animated Geometric Shapes */}
@@ -96,13 +117,13 @@ export const LandingPage: React.FC = () => {
               <div className="absolute h-[4px] w-full bg-border top-1/2 left-0 -translate-y-1/2" />
               <div className="absolute w-[4px] h-full bg-border left-2/3 top-0" />
               
-              <div className="relative z-10 bg-white border-4 border-border p-5 shadow-md flex flex-col items-center hover:scale-105 transition-transform">
+              <div className="relative z-10 bg-card-bg border-4 border-border p-5 shadow-md flex flex-col items-center hover:scale-105 transition-transform">
                 <div className="flex gap-2">
                   <span className="text-primary-red font-black text-2xl animate-shape-bounce inline-block">●</span>
                   <span className="text-primary-yellow font-black text-2xl animate-shape-pulse inline-block [animation-delay:0.3s]">■</span>
                   <span className="text-primary-blue font-black text-2xl animate-float-slow inline-block [animation-delay:0.6s]">▲</span>
                 </div>
-                <span className="font-black text-xs uppercase tracking-widest text-canvas-fg mt-2">TJFLOW WORKSPACE</span>
+                <span className="font-black text-xs uppercase tracking-widest text-canvas-fg mt-2 select-none">TJFLOW WORKSPACE</span>
               </div>
             </div>
           </div>
@@ -408,6 +429,12 @@ export const LandingPage: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      {/* Reviewer Test Mode Modal */}
+      <TestModeModal 
+        isOpen={testModalOpen} 
+        onClose={() => setTestModalOpen(false)} 
+      />
     </div>
   );
 };

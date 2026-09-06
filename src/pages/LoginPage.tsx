@@ -4,12 +4,15 @@ import { loginUser, signInWithGoogle } from '../services/auth';
 import { useAuth } from '../context/AuthContext';
 import { Card } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
+import { TestModeModal } from '../components/ui/TestModeModal';
+import { Zap } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [testModalOpen, setTestModalOpen] = useState(false);
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -61,14 +64,38 @@ export const LoginPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-canvas-bg flex flex-col justify-center items-center p-4">
+    <div className="min-h-screen bg-canvas-bg flex flex-col justify-center items-center p-4 select-none">
       {/* Brand logo */}
-      <Link to="/" className="mb-8 flex items-center gap-3 hover:opacity-85 transition-opacity">
+      <Link to="/" className="mb-6 flex items-center gap-3 hover:opacity-85 transition-opacity">
         <span className="text-primary-red font-black text-3xl select-none">●</span>
         <span className="text-primary-yellow font-black text-3xl select-none">■</span>
         <span className="text-primary-blue font-black text-3xl select-none">▲</span>
         <span className="font-bold text-3xl tracking-tighter text-canvas-fg">TJFLOW</span>
       </Link>
+
+      {/* Reviewer Test Mode Callout Banner */}
+      <div 
+        onClick={() => setTestModalOpen(true)}
+        className="w-full max-w-md mb-6 p-4 bg-primary-yellow border-4 border-border shadow-md cursor-pointer hover:-translate-y-0.5 transition-all flex items-center justify-between group"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-full bg-primary-red text-white border-2 border-border flex items-center justify-center flex-shrink-0 font-bold">
+            <Zap className="w-5 h-5 animate-pulse" />
+          </div>
+          <div>
+            <div className="font-black text-xs uppercase tracking-widest text-canvas-fg flex items-center gap-1.5">
+              <span>Task Reviewer Test Mode</span>
+              <span className="bg-primary-red text-white text-[9px] px-1.5 py-0.2">POPULATED</span>
+            </div>
+            <div className="text-xs font-semibold text-canvas-fg/90">
+              1-Click instant access with 4 dummy accounts & live data
+            </div>
+          </div>
+        </div>
+        <span className="font-black text-xs text-canvas-fg group-hover:translate-x-1 transition-transform">
+          Open →
+        </span>
+      </div>
 
       <Card className="w-full max-w-md bg-card-bg border-2 border-border p-8 relative overflow-hidden animate-fade-in text-canvas-fg" shadow="lg">
         {/* Decorative background shape */}
@@ -162,6 +189,13 @@ export const LoginPage: React.FC = () => {
           </Link>
         </div>
       </Card>
+
+      {/* Reviewer Test Mode Modal */}
+      <TestModeModal 
+        isOpen={testModalOpen} 
+        onClose={() => setTestModalOpen(false)} 
+      />
     </div>
   );
 };
+
