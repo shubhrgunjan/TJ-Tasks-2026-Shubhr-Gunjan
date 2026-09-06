@@ -85,8 +85,8 @@ export const LandingPage: React.FC = () => {
             </div>
 
             <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tight leading-none text-canvas-fg mb-4">
-              ORCHESTRATE WORK.<br />
-              <span className="text-primary-blue">DELIVER TOGETHER.</span>
+              STRUCTURE THE WORK.<br />
+              <span className="text-primary-blue">MOVE THE TEAM.</span>
             </h1>
             <p className="text-base md:text-lg font-medium text-text-secondary dark:text-gray-300 max-w-xl mb-8 leading-relaxed">
               TJFlow gives modern product teams a unified visual workspace for project boards, task tracking, team chat, and activity monitoring—fully synchronized in real time.

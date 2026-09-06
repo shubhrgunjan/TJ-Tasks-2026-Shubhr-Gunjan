@@ -97,31 +97,6 @@ export const loginAsTestPersona = async (personaKey: string): Promise<UserProfil
     }
   }
 
-  // Step 2: Ensure all 4 persona accounts exist in Firebase Auth & Firestore to gather authentic UIDs
-  const personaUids: Record<string, string> = {
-    [personaKey]: activeUser.uid
-  };
-
-  for (const key of Object.keys(TEST_PERSONAS)) {
-    if (key === personaKey) continue;
-    const p = TEST_PERSONAS[key];
-    try {
-      const cred = await signInWithEmailAndPassword(auth, p.email, p.password);
-      personaUids[key] = cred.user.uid;
-    } catch {
-      try {
-        const cred = await createUserWithEmailAndPassword(auth, p.email, p.password);
-        personaUids[key] = cred.user.uid;
-        await updateProfile(cred.user, { displayName: p.displayName, photoURL: p.avatar });
-      } catch (e) {
-        console.warn(`Auth setup fallback for ${p.displayName}:`, e);
-      }
-    }
-  }
-
-  // Re-login as active requested user
-  await signInWithEmailAndPassword(auth, targetPersona.email, targetPersona.password);
-
   // Update profile in Firestore for target persona
   const userRef = doc(db, 'users', activeUser.uid);
   const profileData: UserProfile = {
@@ -141,7 +116,7 @@ export const loginAsTestPersona = async (personaKey: string): Promise<UserProfil
   localStorage.setItem('tjflow_test_persona', personaKey);
 
   // Seed the entire workspace with rich test data
-  await seedTestWorkspaceData(activeUser.uid, personaUids);
+  await seedTestWorkspaceData(activeUser.uid);
 
   return profileData;
 };
@@ -155,27 +130,33 @@ export const seedTestWorkspaceData = async (
   forceReSeed = false
 ): Promise<void> => {
   try {
-    const personaUids: Record<string, string> = typeof personaUidsInput === 'object' && personaUidsInput !== null ? personaUidsInput : {};
+    const personaKey = localStorage.getItem('tjflow_test_persona') || 'sarah';
 
-    // Retrieve or populate UIDs for all personas
-    for (const key of Object.keys(TEST_PERSONAS)) {
-      if (!personaUids[key]) {
-        const p = TEST_PERSONAS[key];
-        const uSnap = await getDocs(query(collection(db, 'users'), where('email', '==', p.email)));
-        if (!uSnap.empty) {
-          personaUids[key] = uSnap.docs[0].id;
-        } else {
-          personaUids[key] = `${key}_demo_uid`;
-        }
-      }
+    let sarahId = activeUid;
+    let alexId = activeUid;
+    let elenaId = activeUid;
+    let devonId = activeUid;
+
+    // Fetch existing persona UIDs from users collection if available
+    try {
+      const usersSnap = await getDocs(collection(db, 'users'));
+      usersSnap.forEach((uDoc) => {
+        const uData = uDoc.data();
+        if (uData.email === TEST_PERSONAS.sarah.email) sarahId = uDoc.id;
+        if (uData.email === TEST_PERSONAS.alex.email) alexId = uDoc.id;
+        if (uData.email === TEST_PERSONAS.elena.email) elenaId = uDoc.id;
+        if (uData.email === TEST_PERSONAS.devon.email) devonId = uDoc.id;
+      });
+    } catch (e) {
+      console.warn('Error fetching users for seeding:', e);
     }
 
-    const sarahId = personaUids.sarah || activeUid;
-    const alexId = personaUids.alex || activeUid;
-    const elenaId = personaUids.elena || activeUid;
-    const devonId = personaUids.devon || activeUid;
+    // Ensure current persona uses activeUid
+    if (personaKey === 'sarah') sarahId = activeUid;
+    if (personaKey === 'alex') alexId = activeUid;
+    if (personaKey === 'elena') elenaId = activeUid;
+    if (personaKey === 'devon') devonId = activeUid;
 
-    // All members list ensures everyone has full access to test every project
     const allMemberIds = Array.from(new Set([sarahId, alexId, elenaId, devonId, activeUid]));
 
     // Step 1: Ensure User Documents for all 4 Personas in Firestore
@@ -695,7 +676,7 @@ export const seedTestWorkspaceData = async (
       await setDoc(doc(db, 'activity_logs', act.id), act, { merge: true });
     }
 
-    // Step 8: Seed Notifications for All Persona Accounts
+    // Step 8: Seed Notifications for Active User
     const notifications: Notification[] = [
       {
         id: `notif_assign_${activeUid}`,

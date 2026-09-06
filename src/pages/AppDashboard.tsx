@@ -18,6 +18,7 @@ import {
   Inbox, Check, X, AlertTriangle, ArrowRight 
 } from 'lucide-react';
 import { subscribeUserProjectTasks } from '../services/tasks';
+import { seedTestWorkspaceData } from '../services/seedTestMode';
 
 const getDueDateMillis = (dueDate: any): number | null => {
   if (!dueDate) return null;
@@ -65,7 +66,18 @@ export const AppDashboard: React.FC = () => {
       setLoading(true);
       try {
         // 1. Load Projects
-        const userProjects = await getUserProjects(profile.uid);
+        let userProjects = await getUserProjects(profile.uid);
+
+        // Fail-safe auto-seed if projects are empty in Test Mode or demo account
+        if (userProjects.length === 0) {
+          try {
+            await seedTestWorkspaceData(profile.uid);
+            userProjects = await getUserProjects(profile.uid);
+          } catch (seedErr) {
+            console.warn('Dashboard auto-seed fallback warning:', seedErr);
+          }
+        }
+
         setProjects(userProjects);
 
         // 2. Load Pending project invitations
