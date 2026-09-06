@@ -45,15 +45,15 @@ TJFlow bypasses traditional REST polling by establishing reactive Firestore docu
 
 ```mermaid
 graph TD
-    A[Browser Client State] -->|subscribeUserProjectTasks| B(Firestore Snapshot Listener)
-    B -->|Project ID Filter| C[Firestore Security Engine]
-    C -->|Stream Collection Docs| D[In-Memory Task Aggregator Map]
-    D -->|O(N) Deduplication| E[React State Context]
-    E -->|Reactive Signal| F[Kanban Board Component]
-    E -->|Reactive Signal| G[Dashboard Metrics Cards]
+    A["Browser Client State"] -->|"subscribeUserProjectTasks"| B["Firestore Snapshot Listener"]
+    B -->|"Project ID Filter"| C["Firestore Security Engine"]
+    C -->|"Stream Collection Docs"| D["In-Memory Task Aggregator Map"]
+    D -->|"O(N) Deduplication"| E["React State Context"]
+    E -->|"Reactive Signal"| F["Kanban Board Component"]
+    E -->|"Reactive Signal"| G["Dashboard Metrics Cards"]
     
-    H[User Move Task Event] -->|Drag & Drop Drop| I[Update Task Status Doc]
-    I -->|Firestore Trigger| B
+    H["User Move Task Event"] -->|"Drag & Drop"| I["Update Task Status Doc"]
+    I -->|"Firestore Trigger"| B
 ```
 
 ### 2. Reviewer Test Mode Sandbox Pipeline
@@ -69,18 +69,18 @@ sequenceDiagram
     participant Seed as seedTestMode Engine
     participant DB as Firestore DB
     
-    Reviewer->>UI: Click Persona (e.g., Sarah Chen)
+    Reviewer->>UI: Click Persona (e.g. Sarah Chen)
     UI->>Auth: signInWithEmailAndPassword()
     alt User Not Found
         Auth-->>UI: Auth Error
         UI->>Auth: createUserWithEmailAndPassword()
-        Auth->>DB: setDoc(users/{uid})
+        Auth->>DB: setDoc users document
     end
     Auth-->>UI: Authenticated Session Token
     UI->>Seed: seedTestWorkspaceData(activeUid)
-    Seed->>DB: Check '🛒 E-Commerce Mobile App Redesign' Project
-    alt Project Missing / Re-seed
-        Seed->>DB: setDoc(4 Projects, 15+ Tasks, Chat Messages, Logs)
+    Seed->>DB: Query Projects & Tasks
+    alt Initializing Sandbox Data
+        Seed->>DB: Write 6 Projects, 25+ Tasks, Chat Messages, Logs
     end
     Seed-->>UI: Workspace Ready
     UI->>Reviewer: Redirect to /app/dashboard with TestModeBar
@@ -93,18 +93,18 @@ Security in TJFlow operates on two levels: client-side route guards and database
 ```mermaid
 graph LR
     subgraph Client Layer
-        A[User Session] --> B{Authenticated?}
-        B -- No --> C[Redirect to /login]
-        B -- Yes --> D{Is Owner or Member?}
-        D -- No --> E[Access Denied View]
-        D -- Yes --> F[Mount Project Board]
+        A["User Session"] --> B["Authenticated?"]
+        B -- "No" --> C["Redirect to /login"]
+        B -- "Yes" --> D["Is Owner or Member?"]
+        D -- "No" --> E["Access Denied View"]
+        D -- "Yes" --> F["Mount Project Board"]
     end
     
     subgraph Database Rule Layer
-        F --> G[Firestore Request]
-        G --> H{request.auth.uid in resource.data.memberIds OR ownerId}
-        H -- False --> I[403 Permission Denied]
-        H -- True --> J[Return Document Payload]
+        F --> G["Firestore Request"]
+        G --> H["request.auth.uid in memberIds OR ownerId"]
+        H -- "False" --> I["403 Permission Denied"]
+        H -- "True" --> J["Return Document Payload"]
     end
 ```
 
@@ -114,18 +114,18 @@ To maintain visual consistency across devices, TJFlow implements an OS-independe
 
 ```mermaid
 flowchart TD
-    A[App Initialization] --> B{Check localStorage 'theme'}
-    B -- Found 'dark' or 'light' --> C[Apply Theme Class to HTML root]
-    B -- Not Found --> D[Force Default 'light' Mode]
+    A["App Initialization"] --> B["Check localStorage theme"]
+    B -- "Found dark or light" --> C["Apply Theme Class to HTML root"]
+    B -- "Not Found" --> D["Force Default light Mode"]
     
-    E[User Clicks Theme Switcher] --> F[Toggle Root Theme Class]
-    F --> G[Update localStorage]
-    F --> H[Async Firestore Update: user.themePreference]
+    E["User Clicks Theme Switcher"] --> F["Toggle Root Theme Class"]
+    F --> G["Update localStorage"]
+    F --> H["Async Firestore Update: user.themePreference"]
     
-    I[User Logs In New Device] --> J[Fetch User Profile Document]
-    J --> K{profile.themePreference exists?}
-    K -- Yes --> L[Align Theme Context & DOM]
-    K -- No --> M[Retain Current Baseline]
+    I["User Logs In New Device"] --> J["Fetch User Profile Document"]
+    J --> K["profile.themePreference exists?"]
+    K -- "Yes" --> L["Align Theme Context & DOM"]
+    K -- "No" --> M["Retain Current Baseline"]
 ```
 
 ### 5. Payment Gateway Simulation State Machine
@@ -136,8 +136,8 @@ The Pro subscription upgrade workflow operates as a 3-step finite state machine.
 stateDiagram-v2
     [*] --> FORM_INPUT : Open Payment Gateway Modal
     
-    FORM_INPUT --> VALIDATING : Click 'Confirm & Upgrade'
-    FORM_INPUT --> [*] : Click 'Cancel' / Close
+    FORM_INPUT --> VALIDATING : Click Confirm & Upgrade
+    FORM_INPUT --> [*] : Click Cancel / Close
     
     state VALIDATING {
         [*] --> CheckCardNumber

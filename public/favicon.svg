@@ -1,13 +1,13 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
   <!-- Container background with neo-brutalist rounded border -->
-  <rect x="3" y="3" width="58" height="58" rx="14" fill="#0F172A" stroke="#1E293B" stroke-width="4"/>
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="#0F172A" stroke="#334155" stroke-width="4"/>
   
   <!-- Blue Triangle (top peak) -->
-  <polygon points="32,10 45,30 19,30" fill="#0066FF" stroke="#0F172A" stroke-width="2.5" stroke-linejoin="round"/>
+  <polygon points="32,10 46,30 18,30" fill="#0066FF" stroke="#000000" stroke-width="2.5" stroke-linejoin="round"/>
   
   <!-- Red Circle (bottom left) -->
-  <circle cx="21" cy="43" r="10" fill="#FF4D4D" stroke="#0F172A" stroke-width="2.5"/>
+  <circle cx="20" cy="44" r="10" fill="#FF4D4D" stroke="#000000" stroke-width="2.5"/>
   
   <!-- Yellow Square (bottom right) -->
-  <rect x="34" y="33" width="19" height="19" rx="3" fill="#FFCC00" stroke="#0F172A" stroke-width="2.5"/>
+  <rect x="33" y="34" width="20" height="20" rx="3" fill="#FFCC00" stroke="#000000" stroke-width="2.5"/>
 </svg>
