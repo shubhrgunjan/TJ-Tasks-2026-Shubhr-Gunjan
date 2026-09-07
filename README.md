@@ -1,6 +1,6 @@
 # TJFLOW — Real-Time Workspace & Collaborative Task Management Platform
 
-**Repository**: `TJ-Tasks-2026-Shubhr-Gunjan`  
+**Repository**: `TJ-Tasks-2026-Shubhr_Gunjan`  
 **Developer**: Shubhr Gunjan ([shubhrrgunjan@gmail.com](mailto:shubhrrgunjan@gmail.com))
 
 ---
